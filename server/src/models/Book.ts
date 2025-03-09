@@ -9,7 +9,8 @@ export interface BookDocument extends Document {
   link: string;
 }
 
-// This is a subdocument schema, it won't become its own model but we'll use it as the schema for the User's `savedBooks` array in User.js
+// This is a subdocument schema, it won't become its own model
+// but we'll use it as the schema for the User's `savedBooks` array
 const bookSchema = new Schema<BookDocument>({
   authors: [
     {
@@ -37,4 +38,5 @@ const bookSchema = new Schema<BookDocument>({
   },
 });
 
+// Export the schema only (not a model)
 export default bookSchema;
