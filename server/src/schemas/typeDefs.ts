@@ -1,46 +1,47 @@
-const typeDefs = `
-type Book {
-  bookId: ID!
-  authors: [String]
-  description: String!
-  title: String!
-  image: String
-  link: String
-}
-  
-type User {
-  _id: ID!
-  username: String!
-  email: String!
-  bookCount: Int
-  savedBooks: [Book]
-}
+import { gql } from 'graphql-tag';
 
-type Auth {
-  token: ID!
-  user: User
-}
+const typeDefs = gql`
+  type User {
+    _id: ID!
+    username: String!
+    email: String
+    bookCount: Int
+    savedBooks: [Book]
+  }
 
-input BookInput {
-  bookId: String!
-  authors: [String]
-  description: String!
-  title: String!
-  image: String
-  link: String
-}
-  
-type Query {
-  me: User
-  books: [Book]
-  user(username: String): User
-}
-    
-type Mutation {
-  login(email: String, username: String, password: String!): Auth
-  addUser(username: String!, email: String!, password: String!): Auth
-  saveBook(bookData: BookInput!): User
-  removeBook(bookId: ID!): User
-}`
+  type Book {
+    bookId: ID!
+    authors: [String]
+    description: String
+    image: String
+    link: String
+    title: String!
+  }
+
+  type Auth {
+    token: ID!
+    user: User
+  }
+
+  input BookInput {
+    authors: [String]
+    description: String
+    bookId: String!
+    image: String
+    link: String
+    title: String!
+  }
+
+  type Query {
+    me: User
+  }
+
+  type Mutation {
+    login(email: String!, password: String!): Auth
+    addUser(username: String!, email: String!, password: String!): Auth
+    saveBook(bookData: BookInput!): User
+    removeBook(bookId: ID!): User
+  }
+`;
 
 export default typeDefs;

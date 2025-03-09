@@ -1,76 +1,54 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
-import { useMutation } from '@apollo/client';
-import { LOGIN_USER } from '../utils/mutation';
+// see SignupForm.js for comments
+
+import { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
+import type { ChangeEvent, FormEvent } from 'react';
+
+import { useMutation } from '@apollo/client';
+import { LOGIN_USER } from '../utils/mutations';
+
 import Auth from '../utils/auth';
-import { LoginData, LoginInput } from '../utils/interfaces.js';
 
-interface LoginFormProps {
-  handleModalClose: () => void;
-}
+const LoginForm = ({}: { handleModalClose: () => void }) => {
+  const [userFormData, setUserFormData] = useState({ email: '', password: '' });
+  const [validated] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
-const LoginForm = ({ handleModalClose }: LoginFormProps): JSX.Element => {
-  // Set initial form state
-  const [userFormData, setUserFormData] = useState<LoginInput>({ email: '', password: '' });
-  
-  // Set state for form validation
-  const [validated, setValidated] = useState<boolean>(false);
-  
-  // Set state for alert
-  const [showAlert, setShowAlert] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('Something went wrong with your login!');
+  const [login, { error }] = useMutation(LOGIN_USER);
 
-  // Set up mutation
-  const [login, { error }] = useMutation<LoginData, LoginInput>(LOGIN_USER);
+  useEffect(() => {
+    if (error) {
+      setShowAlert(true);
+    } else {
+      setShowAlert(false);
+    }
+  }, [error]);
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setUserFormData({ ...userFormData, [name]: value });
   };
 
-  const handleFormSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Check form validity
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.preventDefault();
       event.stopPropagation();
-      setValidated(true);
-      return;
     }
-
-    // Set validated to true
-    setValidated(true);
 
     try {
-      // Execute the mutation with form data as variables
       const { data } = await login({
-        variables: { ...userFormData }
+        variables: { ...userFormData },
       });
 
-      // Check if we got data back
-      if (!data || !data.login || !data.login.token) {
-        throw new Error('Something went wrong!');
-      }
-
-      // Log the user in with the token
       Auth.login(data.login.token);
-      
-      // Close the modal
-      handleModalClose();
-    } catch (err) {
-      console.error(err);
-      // Set error message from the GraphQL error if available
-      if (error && error.message) {
-        setErrorMessage(error.message);
-      } else if (err instanceof Error) {
-        setErrorMessage(err.message);
-      }
-      setShowAlert(true);
+    } catch (e) {
+      console.error(e);
     }
 
-    // Clear form values
+    // clear form values
     setUserFormData({
       email: '',
       password: '',
@@ -80,40 +58,48 @@ const LoginForm = ({ handleModalClose }: LoginFormProps): JSX.Element => {
   return (
     <>
       <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
-        {/* Show alert if server response is bad */}
-        <Alert dismissible onClose={() => setShowAlert(false)} show={showAlert} variant='danger'>
-          {errorMessage}
+        <Alert
+          dismissible
+          onClose={() => setShowAlert(false)}
+          show={showAlert}
+          variant="danger"
+        >
+          Something went wrong with your login credentials!
         </Alert>
-
         <Form.Group className='mb-3'>
-          <Form.Label htmlFor='email'>Email</Form.Label>
+          <Form.Label htmlFor="email">Email</Form.Label>
           <Form.Control
-            type='text'
-            placeholder='Your email'
-            name='email'
+            type="text"
+            placeholder="Your email"
+            name="email"
             onChange={handleInputChange}
             value={userFormData.email}
             required
           />
-          <Form.Control.Feedback type='invalid'>Email is required!</Form.Control.Feedback>
+          <Form.Control.Feedback type="invalid">
+            Email is required!
+          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group className='mb-3'>
-          <Form.Label htmlFor='password'>Password</Form.Label>
+          <Form.Label htmlFor="password">Password</Form.Label>
           <Form.Control
-            type='password'
-            placeholder='Your password'
-            name='password'
+            type="password"
+            placeholder="Your password"
+            name="password"
             onChange={handleInputChange}
             value={userFormData.password}
             required
           />
-          <Form.Control.Feedback type='invalid'>Password is required!</Form.Control.Feedback>
+          <Form.Control.Feedback type="invalid">
+            Password is required!
+          </Form.Control.Feedback>
         </Form.Group>
         <Button
           disabled={!(userFormData.email && userFormData.password)}
-          type='submit'
-          variant='success'>
+          type="submit"
+          variant="success"
+        >
           Submit
         </Button>
       </Form>

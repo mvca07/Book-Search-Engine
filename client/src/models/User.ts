@@ -1,4 +1,4 @@
-import type {  Book } from './Book';
+import type { Book } from './Book';
 
 export interface User {
   username: string | null;
@@ -6,4 +6,3 @@ export interface User {
   password: string | null;
   savedBooks: Book[];
 }
-export type { Book as default }

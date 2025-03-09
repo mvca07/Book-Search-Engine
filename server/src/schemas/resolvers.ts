@@ -1,149 +1,63 @@
-import User from "../models/User.js";
-import { UserDocument } from "../models/User.js";
-import { BookDocument } from "../models/User.js";
-import jwt from 'jsonwebtoken';
-
-// Helper function for generating JWT tokens with proper typing
-const signToken = (user: { username: string; email: string; _id: string | any }): string => {
-  const payload = { 
-    username: user.username, 
-    email: user.email, 
-    _id: user._id.toString ? user._id.toString() : user._id 
-  };
-  return jwt.sign({ data: payload }, process.env.JWT_SECRET || 'mysecretsshhhhh', { expiresIn: '2h' });
-};
+import type IUserContext from '../interfaces/UserContext.js';
+import type IUserDocument from '../interfaces/UserDocument.js';
+import type IBookInput from '../interfaces/BookInput.js';
+import { User } from '../models/index.js';
+import { signToken, AuthenticationError } from '../services/auth-service.js';
 
 const resolvers = {
   Query: {
-    // Get the current logged-in user
-    me: async (_parent: any, _args: any, context: any): Promise<UserDocument | null> => {
+    me: async (_parent: any, _args: any, context: IUserContext): Promise<IUserDocument | null> => {
+      
       if (context.user) {
-        try {
-          return await User.findOne({ _id: context.user._id }).select('-__v -password');
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-          throw new Error('Failed to fetch user data');
-        }
+
+        const userData = await User.findOne({ _id: context.user._id }).select('-__v -password');
+        return userData;
       }
-      throw new Error('Not logged in');
-    },
-    
-    // Resolver to fetch all books from all users (without duplicates)
-    books: async (): Promise<BookDocument[]> => {
-      try {
-        // Find all users that have saved books
-        const users = await User.find({ 'savedBooks.0': { $exists: true } });
-        
-        // Extract all books from all users
-        const allBooks = users.flatMap(user => user.savedBooks);
-        
-        // Remove duplicates by bookId
-        const uniqueBookIds = new Set<string>();
-        const uniqueBooks = allBooks.filter(book => {
-          const isDuplicate = uniqueBookIds.has(book.bookId);
-          uniqueBookIds.add(book.bookId);
-          return !isDuplicate;
-        });
-        
-        return uniqueBooks;
-      } catch (error) {
-        console.error('Error fetching books:', error);
-        throw new Error(`Failed to fetch books: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    },
-    
-    // Resolver to fetch a user by username
-    user: async (_parent: any, args: { username?: string }): Promise<UserDocument | null> => {
-      try {
-        const params = args.username ? { username: args.username } : {};
-        return User.findOne(params);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        throw new Error(`Failed to fetch user: ${error instanceof Error ? error.message : String(error)}`);
-      }
+      throw new AuthenticationError('User not authenticated');
     },
   },
-  
   Mutation: {
-    // Add a new user
-    addUser: async (_parent: any, args: { username: string; email: string; password: string }): Promise<{ token: string; user: UserDocument }> => {
-      try {
-        const user = await User.create(args);
-        const token = signToken(user);
-        return { token, user };
-      } catch (error) {
-        console.error('Error creating user:', error);
-        throw new Error(`Failed to create user: ${error instanceof Error ? error.message : String(error)}`);
-      }
+    addUser: async (_parent: any, args: any): Promise<{ token: string; user: IUserDocument }> => {
+      const user = await User.create(args);
+      const token = signToken(user.username, user.email, user._id);
+            
+      return { token, user };
     },
-    
-    // Login a user
-    login: async (_parent: any, { email, password }: { email: string; password: string }): Promise<{ token: string; user: UserDocument }> => {
-      try {
-        const user = await User.findOne({ email });
-        
-        if (!user) {
-          throw new Error('No user found with this email address');
-        }
-        
-        const correctPassword = await user.isCorrectPassword(password);
-        
-        if (!correctPassword) {
-          throw new Error('Incorrect credentials');
-        }
-        
-        const token = signToken(user);
-        return { token, user };
-      } catch (error) {
-        console.error('Login error:', error);
-        throw error;
+    login: async (_parent: any, { email, password }: { email: string; password: string }): Promise<{ token: string; user: IUserDocument }> => {
+      const user = await User.findOne({ email });
+
+      if (!user || !(await user.isCorrectPassword(password))) {
+        throw new AuthenticationError('Invalid credentials');
       }
+
+      const token = signToken(user.username, user.email, user._id);
+      return { token, user };
     },
-    
-    // Save book to user's savedBooks
-    saveBook: async (_parent: any, { bookData }: { bookData: BookDocument }, context: any): Promise<UserDocument> => {
+    saveBook: async (_parent: any, { bookData }: { bookData: IBookInput }, context: IUserContext): Promise<IUserDocument | null> => {
       if (context.user) {
-        try {
-          const updatedUser = await User.findByIdAndUpdate(
-            context.user._id,
-            { $addToSet: { savedBooks: bookData } },
-            { new: true, runValidators: true }
-          );
-          
-          if (!updatedUser) {
-            throw new Error('Could not find user');
-          }
-          
-          return updatedUser;
-        } catch (error) {
-          console.error('Error saving book:', error);
-          throw new Error('Error saving book to your account');
-        }
+        const updatedUser = await User.findByIdAndUpdate(
+          { _id: context.user._id },
+          { $push: { savedBooks: bookData } },
+          { new: true }
+        );
+
+        return updatedUser;
       }
-      throw new Error('You need to be logged in!');
+
+      throw new AuthenticationError('User not authenticated');
     },
-    
-    // Remove book from user's savedBooks
-    removeBook: async (_parent: any, { bookId }: { bookId: string }, context: any): Promise<UserDocument> => {
+    removeBook: async (_parent: any, { bookId }: { bookId: string }, context: IUserContext): Promise<IUserDocument | null> => {
       if (context.user) {
-        try {
-          const updatedUser = await User.findByIdAndUpdate(
-            context.user._id,
-            { $pull: { savedBooks: { bookId } } },
-            { new: true }
-          );
-          
-          if (!updatedUser) {
-            throw new Error('Could not find user');
-          }
-          
-          return updatedUser;
-        } catch (error) {
-          console.error('Error removing book:', error);
-          throw new Error('Error removing book from your account');
-        }
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: context.user._id },
+          { $pull: { savedBooks: { bookId } } },
+          { new: true }
+        );
+
+        return updatedUser;
       }
-      throw new Error('You need to be logged in!');
+
+      throw new AuthenticationError('User not authenticated');
     },
   },
 };

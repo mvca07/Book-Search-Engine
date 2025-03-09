@@ -10,29 +10,41 @@ interface UserToken {
 class AuthService {
   // get user data
   getProfile() {
-    return jwtDecode(this.getToken() || '');
+    const token = this.getToken();
+    if (!token) throw new Error('No token found');
+    return jwtDecode<UserToken>(token);
   }
 
   // check if user's logged in
   loggedIn() {
     // Checks if there is a saved token and it's still valid
     const token = this.getToken();
-    return !!token && !this.isTokenExpired(token); // handwaiving here
+    if (!token) return false;
+    return !this.isTokenExpired(token);
+    // return !!token && !this.isTokenExpired(token); // handwaiving here
   }
 
   // check if token is expired
-  isTokenExpired(token: string) {
+  isTokenExpired(token: string): boolean {
     try {
       const decoded = jwtDecode<UserToken>(token);
-      if (decoded.exp < Date.now() / 1000) {
-        return true;
-      } 
-      
-      return false;
+      return decoded.exp < Date.now() / 1000;
     } catch (err) {
-      return false;
+      return true; // Treat as expired if decoding fails
     }
   }
+
+  //   try {
+  //     const decoded = jwtDecode<UserToken>(token);
+  //     if (decoded.exp < Date.now() / 1000) {
+  //       return true;
+  //     } 
+      
+  //     return false;
+  //   } catch (err) {
+  //     return false;
+  //   }
+  // }
 
   getToken() {
     // Retrieves the user token from localStorage
@@ -54,3 +66,4 @@ class AuthService {
 }
 
 export default new AuthService();
+ 
