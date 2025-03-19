@@ -14,10 +14,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@types/graphql": "^14.2.3",
     "concurrently": "^8.2.0"
   },
   "dependencies": {
+    "@apollo/client": "^3.13.4",
     "apollo-server-express": "^3.13.0",
     "googlebooks-app": "file:",
     "graphql": "^16.10.0"
