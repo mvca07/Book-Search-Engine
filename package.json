@@ -14,11 +14,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/graphql": "^14.2.3",
     "concurrently": "^8.2.0"
   },
   "dependencies": {
-    "@apollo/client": "^3.13.4",
-    "@apollo/server": "^4.0.0",
-    "graphql-tag": "^2.12.6"
+    "apollo-server-express": "^3.13.0",
+    "googlebooks-app": "file:",
+    "graphql": "^16.10.0"
   }
 }
