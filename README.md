@@ -62,9 +62,7 @@ THEN I am logged out of the site and presented with a menu with the options Sear
     ```md
       npm i
       npm run build
-      npm run seed
       npm run start 
-      Watch the video
         ```
   
   ## Contributors
