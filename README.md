@@ -1,14 +1,25 @@
 # Challenge-18-Book-Search-Engine
-## User Story
+  ## Description
+   fully functioning Google Books API search engine built with a RESTful API, and refactor it to be a GraphQL API built with Apollo Server. 
+   
+  ## Table of Contents
+  * [User Story](#aserStory)
+  * [Acceptance Criteria](#acceptanceCriteria)
+  * [Technical Requirements](#technicalRequirements)
+  * [Testing](#testing) 
+  * [Contributors](#contributors)
+  * [Questions](#questions)
+  * [Web Site](#webite)
+  ## User Story
 
-```md
+ ```md
 AS AN avid reader
 I WANT to search for new books to read
 SO THAT I can keep a list of books to purchase
 ```
-## Acceptance Criteria
+  ## Acceptance Criteria
 
-```md
+ ```md
 GIVEN a book search engine
 WHEN I load the search engine
 THEN I am presented with a menu with the options Search for Books and Login/Signup and an input field to search for books and a submit button
@@ -39,3 +50,29 @@ THEN that book is deleted from my saved books list
 WHEN I click on the Logout button
 THEN I am logged out of the site and presented with a menu with the options Search for Books and Login/Signup and an input field to search for books and a submit button
 ```
+  ## Technical Requirements
+  Technologies and tools used:
+
+  - Microsoft Visual Studio Code
+  - Github
+  - The app was built using the MERN stack with a React front end, MongoDB database, and Node.js/Express.js server and API
+
+  ## Testing
+  From the directory where the repo is installed run:
+    ```md
+      npm i
+      npm run build
+      npm run seed
+      npm run start 
+      Watch the video
+        ```
+  
+  ## Contributors
+  Mateo Velasquez
+  
+  ## Questions
+  Please send your questions [here](mailto:mvca07@gmail.com?subject=[GitHub]%20Dev%20Connect) or visit [github/mvca07](https://github.com/mvca07).
+
+  ## Website
+
+
