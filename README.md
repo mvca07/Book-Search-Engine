@@ -69,8 +69,7 @@ THEN I am logged out of the site and presented with a menu with the options Sear
   Mateo Velasquez
   
   ## Questions
-  Please send your questions [here](mailto:mvca07@gmail.com?subject=[GitHub]%20Dev%20Connect) or visit [github/mvca07](https://github.com/mvca07).
-
+  Please send your questions [here](mailto:mvca07@gmail.com?subject=[GitHub]%20Dev%20Connect) or visit [github/mvca07](https://github.com/mvca07
   ## Website
-
+[Demo](https://book-search-engine-3iri.onrender.com)
 
