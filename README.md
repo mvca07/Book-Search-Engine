@@ -59,7 +59,7 @@ THEN I am logged out of the site and presented with a menu with the options Sear
 
   ## Testing
   From the directory where the repo is installed run:
-    ```md
+    ```
       npm i
       npm run build
       npm run start 
